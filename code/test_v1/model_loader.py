@@ -41,6 +41,7 @@ class ModelLoader():
         
         #### model 1: predict Binary RoadMap ####
         self.model1 = UNet(in_channel=1,out_channel=1).to(self.device)
+        self.model1.load_state_dict(torch.load('../pt_files/best_val_loss_road_map_labeleddata.pt', map_location=self.device))
         # TODO: self.model1.load_state_dict(torch.load('classification.pth', map_location=self.device))
         
         #### model 2: predict Bounding Boxes ####
