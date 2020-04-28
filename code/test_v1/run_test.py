@@ -53,7 +53,8 @@ total_ts_road_map = 0
 for i, data in enumerate(dataloader):
     total += 1
     sample, target, road_image = data
-    sample = sample.cuda()
+    #sample = sample.cuda()
+    sample = sample.to('cpu')
 
     predicted_bounding_boxes = model_loader.get_bounding_boxes(sample)[0].cpu()
     predicted_road_map = model_loader.get_binary_road_map(sample).cpu()
