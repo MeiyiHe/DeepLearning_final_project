@@ -8,5 +8,8 @@ data/**
 code/.ipynb_checkpoints/**
 code/test_v1/.ipynb_checkpoints/**
 code/test_v1/__pycache__/**
+code/__pycache__/**
+code/.ipynb_checkpoints/*
+
 
 **/pt_files/
