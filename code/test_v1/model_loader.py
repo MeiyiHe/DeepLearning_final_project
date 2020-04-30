@@ -11,8 +11,8 @@ import torchvision
 # import your model class
 # import ...
 
-from UNet import *
 from BoundingBox import *
+from hrnet import get_seg_model, get_config
 
 
 # Put your transform function here, we will use it for our dataloader
@@ -37,11 +37,11 @@ class ModelLoader():
         self.batch_size = 1
         
         # set device
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") 
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
         
         #### model 1: predict Binary RoadMap ####
-        self.model1 = UNet(in_channel=1,out_channel=1).to(self.device)
-        self.model1.load_state_dict(torch.load('../pt_files/best_RM_labeled_data02.pt', map_location=self.device))
+        self.model1 = get_seg_model(get_config()).to(self.device)
+        self.model1.load_state_dict(torch.load('HRNET_RM_labeled_data01.pt', map_location=self.device))
         # TODO: self.model1.load_state_dict(torch.load('classification.pth', map_location=self.device))
         
         #### model 2: predict Bounding Boxes ####
@@ -67,12 +67,12 @@ class ModelLoader():
         # samples is a cuda tensor with size [batch_size, 6, 3, 256, 306]
         # You need to return a cuda tensor with size [batch_size, 800, 800] 
         # return torch.rand(1, 800, 800) > 0.5
-        
-        # transform samples
-        samples = self.combine_images(samples)
-        pred_map = self.model1(samples.unsqueeze(1))
-        pred_map = (pred_map.squeeze(1)>0.1).float()
-        return pred_map
+        #samples = torch.stack(samples).to(self.device)
+        samples = samples.view(self.batch_size, -1, 256, 306)
+        pred_map = self.model1(samples)
+        out_map = (pred_map > 0.5).float()
+
+        return out_map
     
     
     def combine_images(self, batch):

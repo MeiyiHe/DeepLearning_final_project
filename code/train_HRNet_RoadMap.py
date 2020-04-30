@@ -41,8 +41,8 @@ if __name__ == '__main__':
 	# You should devide the labeled_scene_index into two subsets (training and validation)
 	labeled_scene_index = np.arange(106, 134)
 
-	train_index = np.arange(106,128)
-	val_index = np.arange(128,134)
+	train_index = np.arange(106,108)
+	val_index = np.arange(128,130)
 
 	transform = torchvision.transforms.ToTensor()
 
@@ -127,12 +127,12 @@ if __name__ == '__main__':
 				val_losses.append(loss.item())
 
 				out_map = (pred_map > 0.5).float()
-				threat_score.append(compute_ts_road_map(out_map, road_img))
+				threat_score.append(compute_ts_road_map(out_map, road_img).item())
 
 			print("Validation Epoch: {}, Average Validation Epoch Loss: {}".format(epoch, np.mean(val_losses)))
 			print("Average Threat Score: {} ".format(np.mean(threat_score)))
 
 			if np.mean(val_losses) < best_val_loss:
 				best_val_loss = np.mean(val_losses)
-				torch.save(model.state_dict(), 'HRNET_RM_labeled_data01.pt')
+				torch.save(model.state_dict(), 'test.pt')
 
