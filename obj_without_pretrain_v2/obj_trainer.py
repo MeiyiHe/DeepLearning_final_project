@@ -76,6 +76,7 @@ class ObjDetTrainer(Trainer):
         #self.model.load_state_dict(torch.load('/content/drive/My Drive/self_dl/pre_train_subsample/epoch_4', map_location=self.device))
         self.model = self.model.to(self.device)
         self.best_val_loss = 100
+        self.best_TS = -1
 
     def get_anchor_boxes(self):
         widths = torch.tensor(self.scaleX)
@@ -192,7 +193,14 @@ class ObjDetTrainer(Trainer):
         print("Average Validation Epoch Loss: ", np.mean(val_losses))
         print("Average Threat Score: ", np.mean(threat_scores))
 
+        if np.mean(threat_scores) > self.best_TS:
+            self.best_TS = np.mean(threat_scores)
+
         if save and np.mean(val_losses) < self.best_val_loss:
+
+            self.best_val_loss = np.mean(val_losses)
+            print('== Saving model at epoch {} with Avg Val Loss {} =='.format(epoch, self.best_val_loss))
+            print('== Current Threat Score is {} =='.format(self.best_TS))
             torch.save(self.model.state_dict(), 'bbox_no_pretrain01.pt')
 
         # if visualize:
