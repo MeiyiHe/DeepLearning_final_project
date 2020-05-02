@@ -28,7 +28,7 @@ class BoundingBox(nn.Module):
 
         ############################################################################
         self.encoder = resnet18()
-        self.classifier = nn.Conv2d(512, 64, kernel_size=3, padding=1, bias=False)
+        self.classifier = nn.Conv2d(2048, 64, kernel_size=3, padding=1, bias=False)
         
         self.input_shape = (800,800)
         self.relu = nn.ReLU(inplace=True) 
@@ -38,21 +38,44 @@ class BoundingBox(nn.Module):
         self.pred = nn.Conv2d(64, 4*9, kernel_size=3, padding=1, bias=False)
 
     def forward(self, x):
-        #print('input x dimension {}'.format(x.shape))
+
+        features = []
+        for im in x:
+          feature_list = []
+          for i in im:
+            feat = self.classifier1(i.view(-1,3,256,306))
+            feature_list.append(feat)
+
+          feat = torch.cat(feature_list)
+          features.append(feat)
+
+        x = torch.cat(features)
         x = self.encoder(x)
-        #print('after encoder, x dimension {}'.format(x.shape))
-
-        #x = self.classifier(x)
+        #print('after classifier, x dimension {}'.format(x.shape))
+        x = self.classifier(x)
+        #print('after classifier, x dimension {}'.format(x.shape))
         x = F.interpolate(x, size=self.input_shape, mode='bilinear', align_corners=False)
-
         #print('after interpolate, x dimension {}'.format(x.shape))
-        x = self.relu(self.classifier(x))
         pred_x = self.pred(x)
-        #print('pred_x shape {}'.format(pred_x.shape))
         box_x = self.regressor(x)
-        #print('box_x shape {}'.format(box_x.shape))
-
+        #print('pred_x shape {}, box_x shape {}'.format(pred_x.shape, box_x.shape))
         return pred_x, box_x
+        ################################################################################
+        # #print('input x dimension {}'.format(x.shape))
+        # x = self.encoder(x)
+        # #print('after encoder, x dimension {}'.format(x.shape))
+
+        # #x = self.classifier(x)
+        # x = F.interpolate(x, size=self.input_shape, mode='bilinear', align_corners=False)
+
+        # #print('after interpolate, x dimension {}'.format(x.shape))
+        # x = self.relu(self.classifier(x))
+        # pred_x = self.pred(x)
+        # #print('pred_x shape {}'.format(pred_x.shape))
+        # box_x = self.regressor(x)
+        # #print('box_x shape {}'.format(box_x.shape))
+
+        # return pred_x, box_x
 
 
 
