@@ -140,9 +140,10 @@ class ObjDetTrainer(Trainer):
             train_losses = []
             for i, (sample, target, road_image, extra) in enumerate(self.trainloader):
                 samples = torch.stack(sample).to(self.device).double()
-                print('samples shape {}'.format(samples.shape))
-                
+                #samples = samples.view(self.batch_sz, -1, 256, 306)
+                #print('samples shape {}'.format(samples.shape))
                 class_target, box_target = self.get_targets(target, sample)
+
                 out_pred, out_bbox = self.model(samples)
                 out_bbox = out_bbox.view(self.batch_sz, -1, 4)
 
@@ -152,7 +153,7 @@ class ObjDetTrainer(Trainer):
                 if loss.item() != 0:
                   self.step(loss)
 
-                if i % 10  == 0:
+                if i % 20  == 0:
                   print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(ep, i * len(samples), len(self.trainloader.dataset), 10. * i / len(self.trainloader), loss.item()))
                   #self.validate(ep) 
                     
@@ -169,21 +170,22 @@ class ObjDetTrainer(Trainer):
         self.model.eval()
         val_losses = []
         threat_scores = []
+        coor_list = []
         print('Started validation')
         with torch.no_grad():
             for i, (sample, target, road_image, extra) in enumerate(self.valloader):
                 samples = torch.stack(sample).to(self.device).double()
+                #samples = samples.view(self.batch_sz, -1, 256, 306)
                 class_target, box_target = self.get_targets(target, sample)
                 out_pred, out_bbox = self.model(samples)
                 out_bbox = out_bbox.view(self.batch_sz, -1, 4)
 
-                target1 = target[0]['bounding_box'].numpy()
-                target2 = target[1]['bounding_box'].numpy()
-                target = [target1, target2]
 
-                final_coor, batched_threat_sum = batched_coor_threat_updated(i, out_bbox, self.anchor_boxes, target, class_target, self.batch_sz, nms_threshold=0.1, plot=False)
-                threat_scores.append(batched_threat_sum.item())
-
+                for t in range(self.batch_sz):
+                    pred_coor = get_coordinate(out_bbox[t], self.anchor_boxes, target[t]['bounding_box'].numpy(), class_target[t], nms_threshold=0.1, plot=False)
+                    coor_list.append(pred_coor)
+                    threat_scores.append( compute_ats_bounding_boxes(torch.stack(coordinate_list), target[t]['bounding_box'] ).item() )
+               
                 loss = self.bbox_loss(box_target, class_target, out_bbox)
                 val_losses.append(loss.item())
 
@@ -195,15 +197,15 @@ class ObjDetTrainer(Trainer):
         print("Average Validation Epoch Loss: ", np.mean(val_losses))
         print("Average Threat Score: ", np.mean(threat_scores))
 
-        if np.mean(threat_scores) > self.best_TS:
-            self.best_TS = np.mean(threat_scores)
-
-        if save and np.mean(val_losses) < self.best_val_loss:
-
+        if np.mean(val_losses) < self.best_val_loss:
             self.best_val_loss = np.mean(val_losses)
-            print('== Saving model at epoch {} with Avg Val Loss {} =='.format(epoch, self.best_val_loss))
-            print('== Current Threat Score is {} =='.format(self.best_TS))
-            torch.save(self.model.state_dict(), 'bbox_no_pretrain01.pt')
+
+
+        if save and np.mean(threat_scores) > self.best_TS:
+            self.best_TS = np.mean(threat_scores)
+            print('== Saving model at epoch {} with best AVG Threat Score {} =='.format(epoch, self.best_TS))
+            print('== Current Validation Loss is {} =='.format(np.mean(val_losses)))
+            torch.save(self.model.state_dict(), 'bbox_no_pretrain02.pt')
 
         # if visualize:
         #     Transform_coor(out_bbox, gt_offsets, class_target, nms_threshold=0.1, plot=True)

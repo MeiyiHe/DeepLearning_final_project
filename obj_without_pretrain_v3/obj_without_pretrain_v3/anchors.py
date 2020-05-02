@@ -174,16 +174,6 @@ def batched_coor_threat_updated(ite, predicted_offsets, anchor_boxes, target, gt
         inds = nms(pred_boxes, gt_classes, nms_threshold)
         pred_boxes = pred_boxes[inds]
         coordinate_list = []
-     
-        # fig,ax = plt.subplots(1)
-        # a = torch.zeros(800,800)
-        # ax.imshow(a)
-        # for box in pred_boxes:
-        #   x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
-        #   rect = patches.Rectangle((x1,y1),abs(x1 - x2),abs(y1 - y2),linewidth=1,edgecolor='r',facecolor='none')
-        #   ax.add_patch(rect)
-
-        # plt.savefig('/content/drive/My Drive/self_dl/predict_{}_{}.png'.format(ite, i))
 
         for box in pred_boxes:
             x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
@@ -200,8 +190,8 @@ def batched_coor_threat_updated(ite, predicted_offsets, anchor_boxes, target, gt
         batched_threat_sum /= batch_sz
         batch_coor.append(coordinate_list)
         #visActual(cur_target, ite,i)
+    
     return batch_coor, batched_threat_sum
-
 
 
 
@@ -259,7 +249,6 @@ def get_coordinate(predicted_offsets, anchor_boxes, target, gt_classes, nms_thre
         coordinate_list = torch.stack(coordinate_list)
     
     return coordinate_list
-
 
 
 

@@ -1,0 +1,30 @@
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.8.2
+  latest version: 4.8.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+
+# All requested packages already installed.
+
+Started train
+Started epoch 0
+Traceback (most recent call last):
+  File "main.py", line 103, in <module>
+    train_obj()
+  File "main.py", line 101, in train_obj
+    obj_trainer.train(epochs, True)
+  File "/home/mh5275/obj_without_pretrain_v3/obj_trainer.py", line 147, in train
+    out_pred, out_bbox = self.model(samples)
+  File "/home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/nn/modules/module.py", line 550, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/home/mh5275/obj_without_pretrain_v3/obj_model.py", line 46, in forward
+    feat = self.classifier1(i.view(-1,3,256,306))
+RuntimeError: shape '[-1, 3, 256, 306]' is invalid for input of size 78336

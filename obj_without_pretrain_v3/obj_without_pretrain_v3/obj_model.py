@@ -18,31 +18,27 @@ from hrnet import get_seg_model, get_config
 class BoundingBox(nn.Module):
     def __init__(self):
         super().__init__()
-        self.encoder = resnet34()
-        self.classifier = nn.Conv2d(512, 64, kernel_size=3, padding=1, bias=False)
-        #self.classifier = nn.Conv2d(512, 64, kernel_size=3, padding=1, bias=False)
+        # self.input_shape = (800,800)
+
+        # self.encoder = get_seg_model(get_config())
+        # self.relu = nn.ReLU(inplace=True)
+        # #self.regressor = nn.Conv2d(64, 4*4, kernel_size=1, padding=1, bias=False)
+        # self.regressor = nn.Conv2d(1, 4*4, kernel_size=800, padding=0, bias=False)
+        # self.pred = nn.Conv2d(1, 4*9, kernel_size=800, padding=0, bias=False)
+
+        ############################################################################
+        self.encoder = resnet18()
+        self.classifier = nn.Conv2d(2048, 64, kernel_size=3, padding=1, bias=False)
+        
         self.input_shape = (800,800)
-        self.relu = nn.ReLU(inplace=True) 
-        self.bn1 = nn.BatchNorm2d(16, momentum=0.01)
+        #self.relu = nn.ReLU(inplace=True) 
+        #self.bn1 = nn.BatchNorm2d(16, momentum=0.01)
         self.classifier1 = nn.Conv2d(3, 18, kernel_size=3, padding=1, bias=False)
         self.regressor = nn.Conv2d(64, 4*4, kernel_size=3, padding=1, bias=False)
         self.pred = nn.Conv2d(64, 4*9, kernel_size=3, padding=1, bias=False)
 
     def forward(self, x):
-        #print('input x dimension {}'.format(x.shape))
-        x = self.encoder(x)
-        #print('after encoder, x dimension {}'.format(x.shape))
-        #x = self.classifier(x)
-        x = F.interpolate(x, size=self.input_shape, mode='bilinear', align_corners=False)
-        x = self.relu(self.classifier(x))
-        pred_x = self.pred(x)
-        box_x = self.regressor(x)
 
-        return pred_x, box_x
-
-    
-    
-    def forward(self, x):
         features = []
         for im in x:
           feature_list = []
@@ -50,7 +46,7 @@ class BoundingBox(nn.Module):
             feat = self.classifier1(i.view(-1,3,256,306))
             feature_list.append(feat)
 
-          feat = torch.stack(feature_list, dim=0).sum(dim=0)
+          feat = torch.cat(feature_list)
           features.append(feat)
 
         x = torch.cat(features)
@@ -64,6 +60,24 @@ class BoundingBox(nn.Module):
         box_x = self.regressor(x)
         #print('pred_x shape {}, box_x shape {}'.format(pred_x.shape, box_x.shape))
         return pred_x, box_x
+        ################################################################################
+        # #print('input x dimension {}'.format(x.shape))
+        # x = self.encoder(x)
+        # #print('after encoder, x dimension {}'.format(x.shape))
+
+        # #x = self.classifier(x)
+        # x = F.interpolate(x, size=self.input_shape, mode='bilinear', align_corners=False)
+
+        # #print('after interpolate, x dimension {}'.format(x.shape))
+        # x = self.relu(self.classifier(x))
+        # pred_x = self.pred(x)
+        # #print('pred_x shape {}'.format(pred_x.shape))
+        # box_x = self.regressor(x)
+        # #print('box_x shape {}'.format(box_x.shape))
+
+        # return pred_x, box_x
+
+
 
 if __name__ == '__main__':
     image_folder = '../data'
@@ -80,13 +94,12 @@ if __name__ == '__main__':
                                    )
     trainloader = torch.utils.data.DataLoader(labeled_trainset, batch_size=batch_sz, shuffle=True, num_workers=2, collate_fn=collate_fn)
 
-    #model = get_seg_model(get_config()).to('cpu')
-    model = BoundingBox().to('cpu')
+    model = get_seg_model(get_config()).to('cpu')
 
     for i, (sample, target, road_image, _) in enumerate(trainloader):
         samples = torch.stack(sample).to('cpu')
         #print('samples shape {}'.format(samples.shape))
-        #samples = samples.view(batch_sz, -1, 256, 306)
+        samples = samples.view(batch_sz, -1, 256, 306)
         #print('samples shape {}'.format(samples.shape))
         
         #class_target, box_target = get_targets(target, sample)
