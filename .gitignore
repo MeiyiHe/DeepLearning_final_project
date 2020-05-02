@@ -1,15 +1,15 @@
 data/
 data/**
 .DS_Store
-*/.DS_Store
-*.DS_Store
-*.ipynb_checkpoints
+**/.DS_Store
+*.pyc
+*.pyo
 
-code/.ipynb_checkpoints/**
-code/test_v1/.ipynb_checkpoints/**
-code/test_v1/__pycache__/**
-code/__pycache__/**
-code/.ipynb_checkpoints/*
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+__pycache__/
 
 
 **/pt_files/
+
