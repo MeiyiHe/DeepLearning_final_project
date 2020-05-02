@@ -10,7 +10,7 @@ class BoundingBox(nn.Module):
     def __init__(self):
         super().__init__()
         self.encoder = resnet18()
-        self.classifier = nn.Conv2d(2048, 10, kernel_size=3, padding=1, bias=False)
+        self.classifier = nn.Conv2d(512, 10, kernel_size=3, padding=1, bias=False)
         self.input_shape = (800,800)
         self.relu = nn.ReLU(inplace=True) 
         self.bn1 = nn.BatchNorm2d(16, momentum=0.01)
