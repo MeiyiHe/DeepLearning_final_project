@@ -1,0 +1,52 @@
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.8.2
+  latest version: 4.8.3
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+
+# All requested packages already installed.
+
+Started train
+Started epoch 0
+Traceback (most recent call last):
+  File "main.py", line 103, in <module>
+    train_obj()
+  File "main.py", line 101, in train_obj
+    obj_trainer.train(epochs, True)
+  File "/home/mh5275/obj_without_pretrain_v3/obj_trainer.py", line 154, in train
+    self.step(loss)
+  File "/home/mh5275/obj_without_pretrain_v3/obj_trainer.py", line 121, in step
+    loss.backward()
+  File "/home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/tensor.py", line 198, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/autograd/__init__.py", line 100, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: expected dtype Double but got dtype Float (validate_dtype at /opt/conda/conda-bld/pytorch_1587428398394/work/aten/src/ATen/native/TensorIterator.cpp:143)
+frame #0: c10::Error::Error(c10::SourceLocation, std::string const&) + 0x4e (0x2b5c33ca7b5e in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libc10.so)
+frame #1: at::TensorIterator::compute_types() + 0xce3 (0x2b5c08142793 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: at::TensorIterator::build() + 0x44 (0x2b5c08145174 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: at::native::smooth_l1_loss_backward_out(at::Tensor&, at::Tensor const&, at::Tensor const&, at::Tensor const&, long) + 0x193 (0x2b5c07f92f73 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #4: <unknown function> + 0xe080b7 (0x2b5c0daca0b7 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cuda.so)
+frame #5: at::native::smooth_l1_loss_backward(at::Tensor const&, at::Tensor const&, at::Tensor const&, long) + 0x16e (0x2b5c07f9b69e in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #6: <unknown function> + 0xed98af (0x2b5c084828af in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #7: <unknown function> + 0xe22286 (0x2b5c083cb286 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #8: <unknown function> + 0x2a068bb (0x2b5c09faf8bb in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #9: <unknown function> + 0xe22286 (0x2b5c083cb286 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #10: torch::autograd::generated::SmoothL1LossBackward::apply(std::vector<at::Tensor, std::allocator<at::Tensor> >&&) + 0x1f7 (0x2b5c09bae107 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #11: <unknown function> + 0x2ae8215 (0x2b5c0a091215 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #12: torch::autograd::Engine::evaluate_function(std::shared_ptr<torch::autograd::GraphTask>&, torch::autograd::Node*, torch::autograd::InputBuffer&) + 0x16f3 (0x2b5c0a08e513 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #13: torch::autograd::Engine::thread_main(std::shared_ptr<torch::autograd::GraphTask> const&, bool) + 0x3d2 (0x2b5c0a08f2f2 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #14: torch::autograd::Engine::thread_init(int) + 0x39 (0x2b5c0a087969 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_cpu.so)
+frame #15: torch::autograd::python::PythonEngine::thread_init(int) + 0x38 (0x2b5c06aba558 in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/torch/lib/libtorch_python.so)
+frame #16: <unknown function> + 0xc819d (0x2b5beac2d19d in /home/mh5275/miniconda3/envs/pytorch/lib/python3.7/site-packages/pandas/_libs/window/../../../../../libstdc++.so.6)
+frame #17: <unknown function> + 0x7e25 (0x2b5bd46a5e25 in /lib64/libpthread.so.0)
+frame #18: clone + 0x6d (0x2b5bd49b8bad in /lib64/libc.so.6)
+

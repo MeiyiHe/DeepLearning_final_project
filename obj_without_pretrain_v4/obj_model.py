@@ -11,6 +11,7 @@ import numpy as np
 import torchvision
 from helper import draw_box, collate_fn
 from data_helper import UnlabeledDataset, LabeledDataset
+from hrnet import get_seg_model, get_config
 
 
 
@@ -27,7 +28,7 @@ class BoundingBox(nn.Module):
 
         ############################################################################
         self.encoder = resnet18()
-        self.classifier = nn.Conv2d(512, 64, kernel_size=3, padding=1, bias=False)
+        self.classifier = nn.Conv2d(2048, 64, kernel_size=3, padding=1, bias=False)
         
         self.input_shape = (800,800)
         self.relu = nn.ReLU(inplace=True) 
@@ -41,10 +42,8 @@ class BoundingBox(nn.Module):
         features = []
         for im in x:
           feature_list = []
-
-          for i in im.double():
-        
-            feat = self.classifier1( i.view(-1,3,256,306) )
+          for i in im:
+            feat = self.classifier1(i.view(-1,3,256,306))
             feature_list.append(feat)
 
           feat = torch.cat(feature_list)

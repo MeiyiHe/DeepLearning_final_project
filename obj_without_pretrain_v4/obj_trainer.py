@@ -127,7 +127,9 @@ class ObjDetTrainer(Trainer):
         inds = (class_targets != 0)
         box_targets = box_targets[inds]
         out_bbox = out_bbox[inds]
-        loss_bbox = F.smooth_l1_loss(out_bbox, box_targets)
+	#criterion = torch.nn.MSELoss()
+        criterion = torch.nn.MSELoss()
+        loss_bbox = criterion(out_bbox, box_targets)
 
         return loss_bbox
 
@@ -175,7 +177,7 @@ class ObjDetTrainer(Trainer):
         with torch.no_grad():
             for i, (sample, target, road_image, extra) in enumerate(self.valloader):
                 samples = torch.stack(sample).to(self.device).double()
-                samples = samples.view(self.batch_sz, -1, 256, 306)
+                #samples = samples.view(self.batch_sz, -1, 256, 306)
                 class_target, box_target = self.get_targets(target, sample)
                 out_pred, out_bbox = self.model(samples)
                 out_bbox = out_bbox.view(self.batch_sz, -1, 4)
@@ -205,7 +207,7 @@ class ObjDetTrainer(Trainer):
             self.best_TS = np.mean(threat_scores)
             print('== Saving model at epoch {} with best AVG Threat Score {} =='.format(epoch, self.best_TS))
             print('== Current Validation Loss is {} =='.format(np.mean(val_losses)))
-            torch.save(self.model.state_dict(), 'bbox_no_pretrain02.pt')
+            torch.save(self.model.state_dict(), 'bbox_no_pretrain03.pt')
 
         # if visualize:
         #     Transform_coor(out_bbox, gt_offsets, class_target, nms_threshold=0.1, plot=True)
