@@ -197,6 +197,7 @@ def batched_coor_threat_updated(ite, predicted_offsets, anchor_boxes, target, gt
             
         coordinate_list = torch.stack(coordinate_list)
         batched_threat_sum += compute_ats_bounding_boxes(coordinate_list, cur_target)
+        batched_threat_sum /= batch_sz
         batch_coor.append(coordinate_list)
         #visActual(cur_target, ite,i)
     return batch_coor, batched_threat_sum
