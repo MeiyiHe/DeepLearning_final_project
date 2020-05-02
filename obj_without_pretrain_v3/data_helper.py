@@ -1,15 +1,14 @@
 import os
 from PIL import Image
-
 import numpy as np
 import pandas as pd
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 
 from helper import convert_map_to_lane_map, convert_map_to_road_map
+
 
 NUM_SAMPLE_PER_SCENE = 126
 NUM_IMAGE_PER_SAMPLE = 6
@@ -21,6 +20,7 @@ image_names = [
     'CAM_BACK.jpeg',
     'CAM_BACK_RIGHT.jpeg',
     ]
+
 
 # The dataset class for unlabeled data.
 class UnlabeledDataset(torch.utils.data.Dataset):
@@ -79,6 +79,7 @@ class UnlabeledDataset(torch.utils.data.Dataset):
             image = Image.open(image_path)
 
             return self.transform(image), index % NUM_IMAGE_PER_SAMPLE
+
 
 # The dataset class for labeled data.
 class LabeledDataset(torch.utils.data.Dataset):    

@@ -507,17 +507,18 @@ class HighResolutionNet(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
-        #print("after conv1: ", x.shape)
+        print('===========================')
+        print("after conv1: ", x.shape)
         x = self.bn1(x)
-        #print("after bn1: ", x.shape)
+        print("after bn1: ", x.shape)
         x = self.relu(x)
         x = self.conv2(x)
-        #print("after conv2: ", x.shape)
+        print("after conv2: ", x.shape)
         x = self.bn2(x)
-        #print("after bn2: ", x.shape)
+        print("after bn2: ", x.shape)
         x = self.relu(x)
         x = self.layer1(x)
-        #print("after layer1: ", x.shape)
+        print("after layer1: ", x.shape)
 
         x_list = []
         for i in range(self.stage2_cfg['NUM_BRANCHES']):
@@ -542,7 +543,6 @@ class HighResolutionNet(nn.Module):
             else:
                 x_list.append(y_list[i])
         x = self.stage4(x_list)
-        #print('after branches: ', x.shape)
 
         # Upsampling low resolution channels to shape of high resolution channel
         x0_h, x0_w = x[0].size(2), x[0].size(3)
@@ -551,17 +551,19 @@ class HighResolutionNet(nn.Module):
         x3 = F.upsample(x[3], size=(x0_h, x0_w), mode='bilinear')
 
         x = torch.cat([x[0], x1, x2, x3], 1)
-        #print('after upsampling: ', x.shape)
+        print('after upsampling: ', x.shape)
         x = self.last_layer(x)
-        #print('after last layer: ', x.shape)
+        print('after last layer: ', x.shape)
         
         # Upsample to get corret output dimension
         x = F.upsample(x, size=(800, 800), mode='bilinear')
-        #print('after upsampling: ', x.shape)
+        print('after upsampling: ', x.shape)
         
         # Use sigmoid to get probabilities
-        x = torch.sigmoid(x).squeeze(1)
+        #x = torch.sigmoid(x).squeeze(1)
         #print('after sigmoid: ', x.shape)
+
+        print('===========================')
 
         return x
 
