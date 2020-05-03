@@ -1,3 +1,8 @@
+
+
+from helper import draw_box, collate_fn
+from data_helper import UnlabeledDataset, LabeledDataset
+
 from resnet import resnet50,resnet34, resnet18
 import torch 
 import torch.nn as nn
@@ -5,12 +10,9 @@ import torch.nn.functional as F
 from fpn import FPN50
 from retina import RetinaNet
 
-
 ## import only for testing
 import numpy as np
 import torchvision
-from helper import draw_box, collate_fn
-from data_helper import UnlabeledDataset, LabeledDataset
 
 
 

@@ -1,3 +1,7 @@
+from anchors import get_bbox_gt, batched_coor_threat_updated
+from helper import compute_ats_bounding_boxes
+
+
 import os
 import random
 import numpy as np
@@ -8,8 +12,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-from anchors import get_bbox_gt, batched_coor_threat_updated
-from helper import compute_ats_bounding_boxes
 
 
 matplotlib.rcParams['figure.figsize'] = [5, 5]

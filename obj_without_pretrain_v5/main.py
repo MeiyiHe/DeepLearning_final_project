@@ -1,3 +1,13 @@
+
+from resnet import resnet18
+from obj_model import BoundingBox
+from obj_trainer import ObjDetTrainer
+
+from data_helper import UnlabeledDataset, LabeledDataset
+from helper import draw_box, collate_fn
+from collections import OrderedDict
+
+
 import os
 import random
 import argparse
@@ -15,13 +25,6 @@ import torchvision
 from torchvision import transforms
 import torchvision.models as models
 
-from data_helper import UnlabeledDataset, LabeledDataset
-from helper import draw_box, collate_fn
-from collections import OrderedDict
-from resnet import resnet18
-from obj_model import BoundingBox
-from obj_trainer import ObjDetTrainer
-from hrnet import get_seg_model, get_config
 
 
 if __name__ == '__main__':
