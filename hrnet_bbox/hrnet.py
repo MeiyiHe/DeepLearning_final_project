@@ -560,10 +560,10 @@ class HighResolutionNet(nn.Module):
         # print('after upsampling: ', x.shape)
         
         # Use sigmoid to get probabilities
-        #x = torch.sigmoid(x).squeeze(1)
+        x = torch.sigmoid(x).squeeze(1)
         # print('after sigmoid: ', torch.sigmoid(x).squeeze(1).shape)
         # print('after squeeze 1: ', x.squeeze(1).shape)
-        return x.squeeze(1)
+        return x
 
     def init_weights(self, pretrained='',):
         logger.info('=> init weights from normal distribution')

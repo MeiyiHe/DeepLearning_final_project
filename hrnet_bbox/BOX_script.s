@@ -17,4 +17,4 @@ module load anaconda3/5.3.1
 conda activate pytorch
 conda install -n pytorch nb_conda_kernels
 
-python main.py --epochs 10 train_HRNet_Bbox.py --data-dir '/scratch/mh5275/data' --out-file 'bbox_hrnet01.pt'
+python train_HRNet_Bbox.py --epochs 10 --data-dir '/scratch/mh5275/data' --out-file 'bbox_hrnet01.pt'

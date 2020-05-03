@@ -46,8 +46,9 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	image_folder = args.data_dir
-	annotation_csv = f'{args.data_dir}/annotation.csv'
+	image_folder = '../data'
+	annotation_csv = '../data/annotation.csv'
+
 	epochs = args.epochs
 	batch_size = args.batch_size
 	lr = args.lr
@@ -98,6 +99,9 @@ if __name__ == '__main__':
 	# define model, loss function, optimizer
 	model = get_seg_model(get_config()).to(device)
 
+	for param in model.parameters():
+		param.requires_grad = True
+
 	criterion = torch.nn.MSELoss()
 	#param_list = [p for p in model.parameters() if p.requires_grad]
 	optimizer = torch.optim.SGD(
@@ -130,12 +134,12 @@ if __name__ == '__main__':
 			label = box_to_label(target, device).float().to(device)
 			optimizer.zero_grad()
 			pred_label = model(sample)
-			
+					
 			loss = criterion(pred_label, label)
 			train_losses.append(loss.item())
-
-			loss.backward()
-			optimizer.step()
+			if loss.item() != 0:
+				loss.backward()
+				optimizer.step()
 			
 			if i % 50 == 0:
 				print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(\
@@ -157,8 +161,9 @@ if __name__ == '__main__':
 				pred_label = model(sample)
 				loss = criterion(pred_label, label)
 				val_losses.append(loss.item())
-				#out_label = (pred_label > 0.5).double()
-				pred_bboxes = label_to_box(pred_label, device)
+				out_label = (pred_label > 0.5).double()
+				#pred_bboxes = label_to_box(pred_label, device)
+				pred_bboxes = label_to_box(out_label, device)
 				
 				for i in range(batch_size):
 					threat_scores.append( compute_ats_bounding_boxes( pred_bboxes[i], target[i]['bounding_box'] ).item() )
@@ -167,17 +172,17 @@ if __name__ == '__main__':
 				print('Val Epoch: {} [{}/{} ({:.0f}%)]\tAverage Loss So Far: {:.6f}'.format(\
 					epoch, i * len(sample), len(valloader.dataset), 5. * i / len(valloader), np.mean(val_losses)))
 
-			print("Average Validation Epoch Loss: ", np.mean(val_losses))
-			print("Average Threat Score: ", np.mean(threat_scores))
+		print("Average Validation Epoch Loss: ", np.mean(val_losses))
+		print("Average Threat Score: ", np.mean(threat_scores))
 
-			if np.mean(val_losses) < best_val_loss:
-				best_val_loss = np.mean(val_losses)
+		if np.mean(val_losses) < best_val_loss:
+			best_val_loss = np.mean(val_losses)
 			
-			if np.mean(threat_scores) > best_TS:
-				best_TS = np.mean(threat_scores) 
-				print('== Saving model at epoch {} with best AVG Threat Score {} =='.format(epoch, best_TS))
-				print('== Current Validation Loss is {} =='.format(np.mean(val_losses)))
-				torch.save(model.state_dict(), outfile)
+		if np.mean(threat_scores) > best_TS:
+			best_TS = np.mean(threat_scores) 
+			print('== Saving model at epoch {} with best AVG Threat Score {} =='.format(epoch, best_TS))
+			print('== Current Validation Loss is {} =='.format(np.mean(val_losses)))
+			torch.save(model.state_dict(), outfile)
 
 
             
