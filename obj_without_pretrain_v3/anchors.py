@@ -197,8 +197,7 @@ def batched_coor_threat_updated(ite, predicted_offsets, anchor_boxes, target, gt
 
 def get_coordinate(predicted_offsets, anchor_boxes, target, gt_classes, nms_threshold=0.1, plot=False):
 
-    cur_target = torch.from_numpy(target)
-
+    #cur_target = torch.from_numpy(target)
     #gt_classes = original_gt_classes
 
     inds = (gt_classes != 0)
@@ -246,8 +245,7 @@ def get_coordinate(predicted_offsets, anchor_boxes, target, gt_classes, nms_thre
         width = abs(x1 - x2)
         height = abs(y1 - y2)
         coordinate_list.append(torch.tensor([x2, x2, x1, x1, y2, y1, y2, y1]).view(-1, 4))    
-        coordinate_list = torch.stack(coordinate_list)
-    
+    coordinate_list = torch.stack(coordinate_list)
     return coordinate_list
 
 

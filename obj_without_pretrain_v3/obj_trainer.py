@@ -170,21 +170,21 @@ class ObjDetTrainer(Trainer):
         self.model.eval()
         val_losses = []
         threat_scores = []
-        coor_list = []
+        #coor_list = []
         print('Started validation')
         with torch.no_grad():
             for i, (sample, target, road_image, extra) in enumerate(self.valloader):
                 samples = torch.stack(sample).to(self.device).double()
-                samples = samples.view(self.batch_sz, -1, 256, 306)
+                #samples = samples.view(self.batch_sz, -1, 256, 306)
                 class_target, box_target = self.get_targets(target, sample)
                 out_pred, out_bbox = self.model(samples)
                 out_bbox = out_bbox.view(self.batch_sz, -1, 4)
 
 
                 for t in range(self.batch_sz):
-                    pred_coor = get_coordinate(out_bbox[t], self.anchor_boxes, target[t]['bounding_box'].numpy(), class_target[t], nms_threshold=0.1, plot=False)
-                    coor_list.append(pred_coor)
-                    threat_scores.append( compute_ats_bounding_boxes(torch.stack(coordinate_list), target[t]['bounding_box'] ).item() )
+                    pred_coor = get_coordinate(out_bbox[t], self.anchor_boxes, target[t]['bounding_box'], class_target[t], nms_threshold=0.1, plot=False)
+                    #coor_list.append(pred_coor)
+                    threat_scores.append( compute_ats_bounding_boxes( pred_coor, target[t]['bounding_box'] ).item() )
                
                 loss = self.bbox_loss(box_target, class_target, out_bbox)
                 val_losses.append(loss.item())
