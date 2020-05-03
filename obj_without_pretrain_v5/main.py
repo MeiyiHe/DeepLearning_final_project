@@ -1,3 +1,13 @@
+
+from resnet import resnet18
+from obj_model import BoundingBox
+from obj_trainer import ObjDetTrainer
+
+from data_helper import UnlabeledDataset, LabeledDataset
+from helper import draw_box, collate_fn
+from collections import OrderedDict
+
+
 import os
 import random
 import argparse
@@ -15,13 +25,6 @@ import torchvision
 from torchvision import transforms
 import torchvision.models as models
 
-from data_helper import UnlabeledDataset, LabeledDataset
-from helper import draw_box, collate_fn
-from collections import OrderedDict
-from resnet import resnet18
-from obj_model import BoundingBox
-from obj_trainer import ObjDetTrainer
-from hrnet import get_seg_model, get_config
 
 
 if __name__ == '__main__':
@@ -43,13 +46,13 @@ if __name__ == '__main__':
 
   # All the images are saved in image_folder
   # All the labels are saved in the annotation_csv file
-  #image_folder = '../data'
-  #annotation_csv = '../data/annotation.csv'
+  image_folder = '../data'
+  annotation_csv = '../data/annotation.csv'
   #image_folder = '/content/drive/My Drive/self_dl/student_data/data'
   # annotation_csv = '/content/drive/My Drive/self_dl/student_data/data/annotation.csv'
   #pirl_file_path = '/content/drive/My Drive/self_dl/pre_train/'
-  image_folder = '/scratch/mh5275/data'
-  annotation_csv = '/scratch/mh5275/data/annotation.csv'
+  #image_folder = '/scratch/jd4138/data'
+  #annotation_csv = '/scratch/jd4138/data/annotation.csv'
 
   train_index = np.arange(106,108)
   val_index = np.arange(124,126)
@@ -89,7 +92,7 @@ if __name__ == '__main__':
 
   def train_obj():
       #model = get_seg_model(get_config()).to(device) 
-      model = BoundingBox().to(device)
+      model = BoundingBox().double().to(device)
 
       param_list = [p for p in model.parameters() if p.requires_grad]
       optimizer = torch.optim.Adam(param_list, lr=lr, weight_decay=weight_decay_const)

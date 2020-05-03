@@ -1,0 +1,4 @@
+
+resnet18 + smooth l1 loss
+
+TODO: change all class target = 1

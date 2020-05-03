@@ -1,3 +1,7 @@
+from anchors import get_bbox_gt, batched_coor_threat_updated
+from helper import compute_ats_bounding_boxes
+
+
 import os
 import random
 import numpy as np
@@ -8,8 +12,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-from anchors import get_bbox_gt, batched_coor_threat_updated
-from helper import compute_ats_bounding_boxes
 
 
 matplotlib.rcParams['figure.figsize'] = [5, 5]
@@ -170,7 +172,7 @@ class ObjDetTrainer(Trainer):
         self.model.eval()
         val_losses = []
         threat_scores = []
-        coor_list = []
+        #coor_list = []
         print('Started validation')
         with torch.no_grad():
             for i, (sample, target, road_image, extra) in enumerate(self.valloader):
@@ -182,9 +184,9 @@ class ObjDetTrainer(Trainer):
 
 
                 for t in range(self.batch_sz):
-                    pred_coor = get_coordinate(out_bbox[t], self.anchor_boxes, target[t]['bounding_box'].numpy(), class_target[t], nms_threshold=0.1, plot=False)
-                    coor_list.append(pred_coor)
-                    threat_scores.append( compute_ats_bounding_boxes(torch.stack(coordinate_list), target[t]['bounding_box'] ).item() )
+                    pred_coor = get_coordinate(out_bbox[t], self.anchor_boxes, target[t]['bounding_box'], class_target[t], nms_threshold=0.1, plot=False)
+                    #coor_list.append(pred_coor)
+                    threat_scores.append( compute_ats_bounding_boxes( pred_coor, target[t]['bounding_box'] ).item() )
                
                 loss = self.bbox_loss(box_target, class_target, out_bbox)
                 val_losses.append(loss.item())
