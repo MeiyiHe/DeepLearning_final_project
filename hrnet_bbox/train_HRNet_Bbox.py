@@ -177,7 +177,7 @@ if __name__ == '__main__':
 				best_TS = np.mean(threat_scores) 
 				print('== Saving model at epoch {} with best AVG Threat Score {} =='.format(epoch, best_TS))
 				print('== Current Validation Loss is {} =='.format(np.mean(val_losses)))
-				torch.save(model.state_dict(), 'test.pt')
+				torch.save(model.state_dict(), outfile)
 
 
             
