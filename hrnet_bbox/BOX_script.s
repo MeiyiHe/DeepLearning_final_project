@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#SBATCH --job-name=bbox_hrnet01
-#SBATCH --output=bbox_hrnet01.out
+#SBATCH --job-name=bbox_hrnet03
+#SBATCH --output=bbox_hrnet03.out
 #SBATCH --cpus-per-task=4
 #SBATCH --nodes=1
 #SBATCH --time=24:00:00
@@ -17,4 +17,7 @@ module load anaconda3/5.3.1
 conda activate pytorch
 conda install -n pytorch nb_conda_kernels
 
-python train_HRNet_Bbox.py --epochs 10 --data-dir '/scratch/mh5275/data' --out-file 'bbox_hrnet01.pt'
+pip install scipy
+pip install scikit-image
+
+python train_HRNet_Bbox.py --epochs 50  --out-file 'bbox_hrnet03.pt'

@@ -46,9 +46,8 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 
-	image_folder = '../data'
-	annotation_csv = '../data/annotation.csv'
-
+	image_folder = '/scratch/mh5275/data'
+	annotation_csv = '/scratch/mh5275/data/annotation.csv'
 	epochs = args.epochs
 	batch_size = args.batch_size
 	lr = args.lr
@@ -71,8 +70,8 @@ if __name__ == '__main__':
 	labeled_scene_index = np.arange(106, 134)
 
 	# define data split
-	train_index = np.arange(106,107)
-	val_index = np.arange(128,129)
+	train_index = np.arange(106,128)
+	val_index = np.arange(128,134)
 
 	transform = torchvision.transforms.ToTensor()
 
@@ -98,11 +97,10 @@ if __name__ == '__main__':
 
 	# define model, loss function, optimizer
 	model = get_seg_model(get_config()).to(device)
-
 	for param in model.parameters():
-		param.requires_grad = True
+		param.require_grad = True
 
-	criterion = torch.nn.MSELoss()
+	criterion = torch.nn.SmoothL1Loss()
 	#param_list = [p for p in model.parameters() if p.requires_grad]
 	optimizer = torch.optim.SGD(
 		[{'params': filter(lambda p: p.requires_grad, model.parameters()),
@@ -134,9 +132,10 @@ if __name__ == '__main__':
 			label = box_to_label(target, device).float().to(device)
 			optimizer.zero_grad()
 			pred_label = model(sample)
-					
+			
 			loss = criterion(pred_label, label)
 			train_losses.append(loss.item())
+
 			if loss.item() != 0:
 				loss.backward()
 				optimizer.step()
@@ -161,9 +160,9 @@ if __name__ == '__main__':
 				pred_label = model(sample)
 				loss = criterion(pred_label, label)
 				val_losses.append(loss.item())
-				out_label = (pred_label > 0.5).double()
-				#pred_bboxes = label_to_box(pred_label, device)
-				pred_bboxes = label_to_box(out_label, device)
+				#out_label = (pred_label > 0.5).double()
+				#pred_bboxes = label_to_box(out_label, device)
+				pred_bboxes = label_to_box(pred_label, device)
 				
 				for i in range(batch_size):
 					threat_scores.append( compute_ats_bounding_boxes( pred_bboxes[i], target[i]['bounding_box'] ).item() )

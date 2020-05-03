@@ -51,9 +51,10 @@ def label_to_box(label, device):
 	Given a batch of predicted label, 
 	return a list of bbox coordinates for each one in the batch
 	'''
-	label = label.to(device)
+	label = label.data.cpu().numpy()
 	batched_coor = []
 	for l in label:
+		
 		test_label = measure.label(l)
 		output = test_label.copy()
 		bboxes = []
