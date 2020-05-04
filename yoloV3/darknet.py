@@ -2,11 +2,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+
 import numpy as np
 from region_loss import RegionLoss
+from yolo_layer import YoloLayer
 from cfg import *
+
 import cv2
+
 #from layers.batchnorm.bn import BN2d
+
+
+
+
+
 
 class MaxPoolStride1(nn.Module):
     def __init__(self):
@@ -15,6 +24,23 @@ class MaxPoolStride1(nn.Module):
     def forward(self, x):
         x = F.max_pool2d(F.pad(x, (0,1,0,1), mode='replicate'), 2, stride=1)
         return x
+
+class Upsample(nn.Module):
+    def __init__(self, stride=2):
+        super(Upsample, self).__init__()
+        self.stride = stride
+    def forward(self, x):
+        stride = self.stride
+        assert(x.data.dim() == 4)
+        B = x.data.size(0)
+        C = x.data.size(1)
+        H = x.data.size(2)
+        W = x.data.size(3)
+        ws = stride
+        hs = stride
+        x = x.view(B, C, H, 1, W, 1).expand(B, C, H, stride, W, stride).contiguous().view(B, C, H*stride, W*stride)
+        return x
+
 
 class Reorg(nn.Module):
     def __init__(self, stride=2):
@@ -82,6 +108,7 @@ class Darknet(nn.Module):
         ind = -2
         self.loss = None
         outputs = dict()
+        out_boxes = []
         for block in self.blocks:
             ind = ind + 1
             #if ind > 0:
@@ -89,7 +116,7 @@ class Darknet(nn.Module):
 
             if block['type'] == 'net':
                 continue
-            elif block['type'] == 'convolutional' or block['type'] == 'maxpool' or block['type'] == 'reorg' or block['type'] == 'avgpool' or block['type'] == 'softmax' or block['type'] == 'connected':
+            elif block['type'] in ['convolutional', 'maxpool', 'reorg', 'upsample', 'avgpool', 'softmax', 'connected']:
                 x = self.models[ind](x)
                 outputs[ind] = x
             elif block['type'] == 'route':
@@ -122,11 +149,20 @@ class Darknet(nn.Module):
                 else:
                     self.loss = self.models[ind](x)
                 outputs[ind] = None
+            elif block['type'] == 'yolo':
+                if self.training:
+                    pass
+                else:
+                    boxes = self.models[ind](x)
+                    out_boxes.append(boxes)
             elif block['type'] == 'cost':
                 continue
             else:
                 print('unknown type %s' % (block['type']))
-        return x
+        if self.training:
+            return self.loss
+        else:
+            return out_boxes
 
     def print_network(self):
         print_cfg(self.blocks)
@@ -136,6 +172,8 @@ class Darknet(nn.Module):
     
         prev_filters = 3
         out_filters =[]
+        prev_stride = 1
+        out_strides = []
         conv_id = 0
         for block in blocks:
             if block['type'] == 'net':
@@ -148,7 +186,8 @@ class Darknet(nn.Module):
                 kernel_size = int(block['size'])
                 stride = int(block['stride'])
                 is_pad = int(block['pad'])
-                pad = (kernel_size-1)/2 if is_pad else 0
+                # pad = (kernel_size-1)/2 if is_pad else 0
+                pad = (kernel_size-1)//2 if is_pad else 0
                 activation = block['activation']
                 model = nn.Sequential()
                 if batch_normalize:
@@ -163,6 +202,8 @@ class Darknet(nn.Module):
                     model.add_module('relu{0}'.format(conv_id), nn.ReLU(inplace=True))
                 prev_filters = filters
                 out_filters.append(prev_filters)
+                prev_stride = stride * prev_stride
+                out_strides.append(prev_stride)
                 models.append(model)
             elif block['type'] == 'maxpool':
                 pool_size = int(block['size'])
@@ -172,6 +213,8 @@ class Darknet(nn.Module):
                 else:
                     model = MaxPoolStride1()
                 out_filters.append(prev_filters)
+                prev_stride = stride * prev_stride
+                out_strides.append(prev_stride)
                 models.append(model)
             elif block['type'] == 'avgpool':
                 model = GlobalAvgPool2d()
@@ -179,6 +222,7 @@ class Darknet(nn.Module):
                 models.append(model)
             elif block['type'] == 'softmax':
                 model = nn.Softmax()
+                out_strides.append(prev_stride)
                 out_filters.append(prev_filters)
                 models.append(model)
             elif block['type'] == 'cost':
@@ -189,27 +233,42 @@ class Darknet(nn.Module):
                 elif block['_type'] == 'smooth':
                     model = nn.SmoothL1Loss(size_average=True)
                 out_filters.append(1)
+                out_strides.append(prev_stride)
                 models.append(model)
             elif block['type'] == 'reorg':
                 stride = int(block['stride'])
                 prev_filters = stride * stride * prev_filters
                 out_filters.append(prev_filters)
+                prev_stride = prev_stride * stride
+                out_strides.append(prev_stride)
                 models.append(Reorg(stride))
+            elif block['type'] == 'upsample':
+                stride = int(block['stride'])
+                out_filters.append(prev_filters)
+                prev_stride = prev_stride / stride
+                out_strides.append(prev_stride)
+                #models.append(nn.Upsample(scale_factor=stride, mode='nearest'))
+                models.append(Upsample(stride))
             elif block['type'] == 'route':
                 layers = block['layers'].split(',')
                 ind = len(models)
                 layers = [int(i) if int(i) > 0 else int(i)+ind for i in layers]
                 if len(layers) == 1:
                     prev_filters = out_filters[layers[0]]
+                    prev_stride = out_strides[layers[0]]
                 elif len(layers) == 2:
                     assert(layers[0] == ind - 1)
                     prev_filters = out_filters[layers[0]] + out_filters[layers[1]]
+                    prev_stride = out_strides[layers[0]]
                 out_filters.append(prev_filters)
+                out_strides.append(prev_stride)
                 models.append(EmptyModule())
             elif block['type'] == 'shortcut':
                 ind = len(models)
                 prev_filters = out_filters[ind-1]
                 out_filters.append(prev_filters)
+                prev_stride = out_strides[ind-1]
+                out_strides.append(prev_stride)
                 models.append(EmptyModule())
             elif block['type'] == 'connected':
                 filters = int(block['output'])
@@ -225,6 +284,7 @@ class Darknet(nn.Module):
                                nn.ReLU(inplace=True))
                 prev_filters = filters
                 out_filters.append(prev_filters)
+                out_strides.append(prev_stride)
                 models.append(model)
             elif block['type'] == 'region':
                 loss = RegionLoss()
@@ -238,7 +298,25 @@ class Darknet(nn.Module):
                 loss.class_scale = float(block['class_scale'])
                 loss.coord_scale = float(block['coord_scale'])
                 out_filters.append(prev_filters)
+                out_strides.append(prev_stride)
                 models.append(loss)
+            elif block['type'] == 'yolo':
+                yolo_layer = YoloLayer()
+                anchors = block['anchors'].split(',')
+                anchor_mask = block['mask'].split(',')
+                yolo_layer.anchor_mask = [int(i) for i in anchor_mask]
+                yolo_layer.anchors = [float(i) for i in anchors]
+                yolo_layer.num_classes = int(block['classes'])
+                yolo_layer.num_anchors = int(block['num'])
+                yolo_layer.anchor_step = len(yolo_layer.anchors)/yolo_layer.num_anchors
+                yolo_layer.stride = prev_stride
+                #yolo_layer.object_scale = float(block['object_scale'])
+                #yolo_layer.noobject_scale = float(block['noobject_scale'])
+                #yolo_layer.class_scale = float(block['class_scale'])
+                #yolo_layer.coord_scale = float(block['coord_scale'])
+                out_filters.append(prev_filters)
+                out_strides.append(prev_stride)
+                models.append(yolo_layer)
             else:
                 print('unknown type %s' % (block['type']))
     
@@ -246,7 +324,7 @@ class Darknet(nn.Module):
 
     def load_weights(self, weightfile):
         fp = open(weightfile, 'rb')
-        header = np.fromfile(fp, count=4, dtype=np.int32)
+        header = np.fromfile(fp, count=5, dtype=np.int32)
         self.header = torch.from_numpy(header)
         self.seen = self.header[3]
         buf = np.fromfile(fp, dtype = np.float32)
@@ -277,11 +355,15 @@ class Darknet(nn.Module):
                 pass
             elif block['type'] == 'reorg':
                 pass
+            elif block['type'] == 'upsample':
+                pass
             elif block['type'] == 'route':
                 pass
             elif block['type'] == 'shortcut':
                 pass
             elif block['type'] == 'region':
+                pass
+            elif block['type'] == 'yolo':
                 pass
             elif block['type'] == 'avgpool':
                 pass
@@ -322,11 +404,15 @@ class Darknet(nn.Module):
                 pass
             elif block['type'] == 'reorg':
                 pass
+            elif block['type'] == 'upsample':
+                pass
             elif block['type'] == 'route':
                 pass
             elif block['type'] == 'shortcut':
                 pass
             elif block['type'] == 'region':
+                pass
+            elif block['type'] == 'yolo':
                 pass
             elif block['type'] == 'avgpool':
                 pass
@@ -339,28 +425,31 @@ class Darknet(nn.Module):
         fp.close()
 
         
-
-        
 def get_test_input():
     img = cv2.imread("../myYolo/dog-cycle-car.png")
     #img = cv2.resize(img, (416,416))          #Resize to the input dimension
     img = cv2.resize(img, (800,800))          #Resize to the input dimension
     img_ =  img[:,:,::-1].transpose((2,0,1))  # BGR -> RGB | H X W C -> C X H X W 
     img_ = img_[np.newaxis,:,:,:]/255.0       #Add a channel at 0 (for batch) | Normalise
-    img_ = torch.from_numpy(img_).float()             #Convert to float
+    img_ = torch.from_numpy(img_).float()     #Convert to float
     img_ = Variable(img_)                     # Convert to Variable
-    print(img_.type())
+    print(img_.shape)
     return img_
-        
         
 if __name__ == '__main__':
     #blocks = parse_cfg('yolov3.cfg')
     #print(create_modules(blocks))
-    model = Darknet('yolo.cfg')
+    model = Darknet('../myYolo/yolov3.cfg')
+    #model.eval()
+    model.train()
     # model.load_weights("yolov3.weights")
-    
+    #print(model)
     inp = get_test_input()
     pred = model(inp)
     
-    print(pred.shape)
     print(pred)
+    
+#     print(len(pred))
+#     print(len(pred[0][0]))
+#     print(pred[0][0])
+    #print(pred)

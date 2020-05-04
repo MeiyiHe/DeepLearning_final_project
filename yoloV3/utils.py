@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from torch.autograd import Variable
 
+import itertools
 import struct # get_image_size
 import imghdr # get_image_size
 
@@ -111,7 +112,12 @@ def convert2cpu_long(gpu_matrix):
     return torch.LongTensor(gpu_matrix.size()).copy_(gpu_matrix)
 
 def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, only_objectness=1, validation=False):
-    anchor_step = len(anchors)/num_anchors
+    '''
+    Predict Transform ?
+    '''
+    
+    
+    anchor_step = len(anchors)//num_anchors
     if output.dim() == 3:
         output = output.unsqueeze(0)
     batch = output.size(0)
@@ -123,21 +129,22 @@ def get_region_boxes(output, conf_thresh, num_classes, anchors, num_anchors, onl
     all_boxes = []
     output = output.view(batch*num_anchors, 5+num_classes, h*w).transpose(0,1).contiguous().view(5+num_classes, batch*num_anchors*h*w)
 
-    grid_x = torch.linspace(0, w-1, w).repeat(h,1).repeat(batch*num_anchors, 1, 1).view(batch*num_anchors*h*w).cuda()
-    grid_y = torch.linspace(0, h-1, h).repeat(w,1).t().repeat(batch*num_anchors, 1, 1).view(batch*num_anchors*h*w).cuda()
+    grid_x = torch.linspace(0, w-1, w).repeat(h,1).repeat(batch*num_anchors, 1, 1).view(batch*num_anchors*h*w).type_as(output) #cuda()
+    grid_y = torch.linspace(0, h-1, h).repeat(w,1).t().repeat(batch*num_anchors, 1, 1).view(batch*num_anchors*h*w).type_as(output) #cuda()
     xs = torch.sigmoid(output[0]) + grid_x
     ys = torch.sigmoid(output[1]) + grid_y
 
     anchor_w = torch.Tensor(anchors).view(num_anchors, anchor_step).index_select(1, torch.LongTensor([0]))
     anchor_h = torch.Tensor(anchors).view(num_anchors, anchor_step).index_select(1, torch.LongTensor([1]))
-    anchor_w = anchor_w.repeat(batch, 1).repeat(1, 1, h*w).view(batch*num_anchors*h*w).cuda()
-    anchor_h = anchor_h.repeat(batch, 1).repeat(1, 1, h*w).view(batch*num_anchors*h*w).cuda()
+    anchor_w = anchor_w.repeat(batch, 1).repeat(1, 1, h*w).view(batch*num_anchors*h*w).type_as(output) #cuda()
+    anchor_h = anchor_h.repeat(batch, 1).repeat(1, 1, h*w).view(batch*num_anchors*h*w).type_as(output) #cuda()
     ws = torch.exp(output[2]) * anchor_w
     hs = torch.exp(output[3]) * anchor_h
 
     det_confs = torch.sigmoid(output[4])
 
     cls_confs = torch.nn.Softmax()(Variable(output[5:5+num_classes].transpose(0,1))).data
+
     cls_max_confs, cls_max_ids = torch.max(cls_confs, 1)
     cls_max_confs = cls_max_confs.view(-1)
     cls_max_ids = cls_max_ids.view(-1)
@@ -333,29 +340,20 @@ def do_detect(model, img, conf_thresh, nms_thresh, use_cuda=1):
     img = torch.autograd.Variable(img)
     t2 = time.time()
 
-    output = model(img)
-    output = output.data
-    #for j in range(100):
-    #    sys.stdout.write('%f ' % (output.storage()[j]))
-    #print('')
+    list_boxes = model(img)
+    boxes = list_boxes[0][0] + list_boxes[1][0] + list_boxes[2][0]
     t3 = time.time()
 
-    boxes = get_region_boxes(output, conf_thresh, model.num_classes, model.anchors, model.num_anchors)[0]
-    #for j in range(len(boxes)):
-    #    print(boxes[j])
-    t4 = time.time()
-
     boxes = nms(boxes, nms_thresh)
-    t5 = time.time()
+    t4 = time.time()
 
     if False:
         print('-----------------------------------')
         print(' image to tensor : %f' % (t1 - t0))
         print('  tensor to cuda : %f' % (t2 - t1))
         print('         predict : %f' % (t3 - t2))
-        print('get_region_boxes : %f' % (t4 - t3))
-        print('             nms : %f' % (t5 - t4))
-        print('           total : %f' % (t5 - t0))
+        print('             nms : %f' % (t4 - t3))
+        print('           total : %f' % (t4 - t0))
         print('-----------------------------------')
     return boxes
 

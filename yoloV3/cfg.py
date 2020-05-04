@@ -107,6 +107,18 @@ def print_cfg(blocks):
             out_widths.append(prev_width)
             out_heights.append(prev_height)
             out_filters.append(prev_filters)
+        elif block['type'] == 'upsample':
+            stride = int(block['stride'])
+            filters = prev_filters
+            width = prev_width*stride
+            height = prev_height*stride
+            print('%5d %-6s           * %d   %3d x %3d x%4d   ->   %3d x %3d x%4d' % (ind, 'upsample', stride, prev_width, prev_height, prev_filters, width, height, filters))
+            prev_width = width
+            prev_height = height
+            prev_filters = filters
+            out_widths.append(prev_width)
+            out_heights.append(prev_height)
+            out_filters.append(prev_filters)
         elif block['type'] == 'route':
             layers = block['layers'].split(',')
             layers = [int(i) if int(i) > 0 else int(i)+ind for i in layers]
@@ -125,7 +137,7 @@ def print_cfg(blocks):
             out_widths.append(prev_width)
             out_heights.append(prev_height)
             out_filters.append(prev_filters)
-        elif block['type'] == 'region':
+        elif block['type'] in ['region', 'yolo']:
             print('%5d %-6s' % (ind, 'detection'))
             out_widths.append(prev_width)
             out_heights.append(prev_height)
