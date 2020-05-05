@@ -35,8 +35,10 @@ def parse_cfg(cfgfile):
 
 def print_cfg(blocks):
     print('layer     filters    size              input                output');
-    prev_width = 416
-    prev_height = 416
+    #prev_width = 416
+    prev_width = 800
+    #prev_height = 416
+    prev_height = 800
     prev_filters = 3
     out_filters =[]
     out_widths =[]
@@ -122,6 +124,8 @@ def print_cfg(blocks):
         elif block['type'] == 'route':
             layers = block['layers'].split(',')
             layers = [int(i) if int(i) > 0 else int(i)+ind for i in layers]
+            print('-------------------')
+            print(layers)
             if len(layers) == 1:
                 print('%5d %-6s %d' % (ind, 'route', layers[0]))
                 prev_width = out_widths[layers[0]]
@@ -129,6 +133,8 @@ def print_cfg(blocks):
                 prev_filters = out_filters[layers[0]]
             elif len(layers) == 2:
                 print('%5d %-6s %d %d' % (ind, 'route', layers[0], layers[1]))
+#                 print('out_widths[layer[0]]', out_widths[layers[0]])
+#                 print('out_widths[layer[1]]', out_widths[layers[1]])
                 prev_width = out_widths[layers[0]]
                 prev_height = out_heights[layers[0]]
                 assert(prev_width == out_widths[layers[1]])
