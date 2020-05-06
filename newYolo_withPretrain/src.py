@@ -1,5 +1,5 @@
 # needed for model
-
+import os
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -659,9 +659,10 @@ class Darknet(nn.Module):
         return tuple(boxes), yoloLossValue
 
     def init_weights(self, pretrained = ''):
+        cuda = torch.cuda.is_available()
+        device = 'cuda:0' if cuda else 'cpu'
         if os.path.isfile(pretrained):
-            pretrained_dict = torch.load(pretrained)
-            logger.info('=> loading pretrained model {}'.format(pretrained))
+            pretrained_dict = torch.load(pretrained, map_location=device)
             model_dict = self.state_dict()
             pretrained_dict = {k: v for k, v in pretrained_dict.items()
                                if k in model_dict.keys()}
