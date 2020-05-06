@@ -570,6 +570,7 @@ class Darknet(nn.Module):
     # for easy use for competition
     # in competition, encoding is None
     def get_bounding_boxes(self, x, encoding = None, targets = None):
+        print('== test message ===')
         if encoding is None:
             encoding = self.encode(x)
         
@@ -587,7 +588,7 @@ class Darknet(nn.Module):
             # Get detected boxes_detected, labels, confidences, class-scores.
             boxes_normalized_all, class_labels_all, confidences_all, class_scores_all = pred_decode(output)
             if boxes_normalized_all.size(0) == 0:
-                return ()
+                continue
 
             # Apply non maximum supression for boxes of each class.
             boxes_normalized, class_labels, probs = [], [], []
@@ -628,41 +629,34 @@ class Darknet(nn.Module):
             x3 = center_x - width/2
             x4 = center_x + width/2
             
-            
             y1 = center_y - height/2
             y2 = center_y + height/2
             y3 = center_y + height/2
             y4 = center_y - height/2
             
+            
             better_coordinates[:, 0, 0] = x1
-            better_coordinates[:, 0, 1] = x2
-            better_coordinates[:, 0, 2] = x3
+            better_coordinates[:, 0, 1] = x3
+            better_coordinates[:, 0, 2] = x2
             better_coordinates[:, 0, 3] = x4
             
             better_coordinates[:, 1, 0] = y1
             better_coordinates[:, 1, 1] = y2
-            better_coordinates[:, 1, 2] = y3
-            better_coordinates[:, 1, 3] = y4
+            better_coordinates[:, 1, 2] = y4
+            better_coordinates[:, 1, 3] = y3
             
             better_coordinates[:, 1, :].mul_(-1)
             # shift back!
             better_coordinates += translation
             
             boxes.append(better_coordinates)
-        
-        #print('got this incoming')
-        #print(x.shape)
-        #print('got these many boxes to look at {}'.format(len(boxes)))
-        ##print('it has this many detections {} at one site'.format(boxes[0].shape[0]))
-        #print("looks like this")
-        #print(boxes[0])
+
         return tuple(boxes), yoloLossValue
 
     def init_weights(self, pretrained = ''):
-        cuda = torch.cuda.is_available()
-        device = 'cuda:0' if cuda else 'cpu'
         if os.path.isfile(pretrained):
-            pretrained_dict = torch.load(pretrained, map_location=device)
+            pretrained_dict = torch.load(pretrained)
+            #logger.info('=> loading pretrained model {}'.format(pretrained))
             model_dict = self.state_dict()
             pretrained_dict = {k: v for k, v in pretrained_dict.items()
                                if k in model_dict.keys()}
