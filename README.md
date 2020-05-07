@@ -14,6 +14,9 @@ This repository is the code for the final group project of NYU DS-GA 1008 Deep L
 6. visualization: Visualize the predictions made by trained models. 
 7. archived: some legacy code.
 
+Given input images (captured by 6 cameras mounted on ego car):
+  ![Sample](/visualization/sample3.png)
 
-  ![Road Map 2](/visualization/roadmap2.png)
-  ![Bounding Box 1](/visualization/bbox1.png)
+Predicted Result in the following formats:
+  ![Road Map](/visualization/roadmap3.png)
+  ![Bounding Box](/visualization/bbox1.png)
