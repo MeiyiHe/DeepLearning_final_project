@@ -133,11 +133,11 @@ if __name__ == '__main__':
 		print("Average Threat Score: {} ".format(np.mean(threat_score)))
 		if np.mean(val_losses) < best_val_loss:
 			best_val_loss = np.mean(val_losses)
-			torch.save(model.state_dict(), 'best_val_yolo01.pt')
+			torch.save(model.state_dict(), 'best_val_yolo02_withPre.pt')
 
 		if np.mean(threat_score) > best_threat:
 			best_threat = np.mean(threat_score)
-			torch.save(model.state_dict(), 'best_threat_yolo01.pt')
+			torch.save(model.state_dict(), 'best_threat_yolo02_withPre.pt')
 
 
 

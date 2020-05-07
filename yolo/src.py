@@ -127,12 +127,12 @@ def pred_decode(pred_tensor, conf_thresh=0.1, prob_thresh=0.1):
         return boxes, labels, confidences, class_scores
 
 
-def nms(boxes, scores, nms_thresh = 0.3):
+def nms(boxes, scores, nms_thresh = 0.35):
     """ Apply non maximum supression.
     Args:
     Returns:
     """
-    threshold = 0.1
+    threshold = nms_thresh
 
     x1 = boxes[:, 0] # [n,]
     y1 = boxes[:, 1] # [n,]
@@ -570,7 +570,7 @@ class Darknet(nn.Module):
     # for easy use for competition
     # in competition, encoding is None
     def get_bounding_boxes(self, x, encoding = None, targets = None):
-        #print('== test message ===')
+        print('== test message ===')
         if encoding is None:
             encoding = self.encode(x)
         
