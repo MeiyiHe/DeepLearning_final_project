@@ -6,22 +6,10 @@ This repository is the code for the final group project of NYU DS-GA 1008 Deep L
 *Team member: Jiayi Du, Meiyi He, Ziyu Lei (group DHL)*
 
 
-- starter_files: The files provided by instructors. 
-
-
-- hrnet: Predict binary road map using HRNets (High-resolution Networks). 
-
-
-- yolo: Predict bounding boxes using YOLO network. 
-
-
-- pretrain: AutoEncoder for pretraining on unlabeled data. 
-
-
-- submission: Since it's a competition, we have 3 rounds of submissions. 
-
-
-- visualization: Visualize the predictions made by trained models. 
-
-
-- archived: some legacy code.
+1. starter_files: The files provided by instructors. 
+2. hrnet: Predict binary road map using HRNets (High-resolution Networks). 
+3. yolo: Predict bounding boxes using YOLO network. 
+4. pretrain: AutoEncoder for pretraining on unlabeled data. 
+5. submission: Since it's a competition, we have 3 rounds of submissions. 
+6. visualization: Visualize the predictions made by trained models. 
+7. archived: some legacy code.
