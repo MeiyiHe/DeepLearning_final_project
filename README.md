@@ -5,7 +5,7 @@
 
 *Team member: Jiayi Du, Meiyi He, Ziyu Lei (**DHL**)*
 
-
+Folders Description:
 1. starter_files: The files provided by instructors. 
 2. hrnet: Predict binary road map using HRNets (High-resolution Networks). 
 3. yolo: Predict bounding boxes using YOLO network. 
@@ -13,6 +13,8 @@
 5. submission: Since it's a competition, we have 3 rounds of submissions. 
 6. visualization: Visualize the predictions made by trained models. 
 7. archived: some legacy code.
+
+
 
 **Given input images (captured by 6 cameras mounted on ego car):**
   ![Sample](/visualization/sample3.png)
