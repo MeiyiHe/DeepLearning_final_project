@@ -1,4 +1,4 @@
-# DeepLearning-SelfDriving
+# DeepLearning Final Project
 
 
 This repository is the code for the final group project of NYU DS-GA 1008 Deep Learning class, taught by Yann LeCun. 
