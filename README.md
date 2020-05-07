@@ -3,7 +3,7 @@
 
 This repository is the code for the final group project of NYU DS-GA 1008 Deep Learning class, taught by Yann LeCun. 
 
-*Team member: Jiayi Du, Meiyi He, Ziyu Lei (group DHL)*
+*Team member: Jiayi Du, Meiyi He, Ziyu Lei (**DHL**)*
 
 
 1. starter_files: The files provided by instructors. 
