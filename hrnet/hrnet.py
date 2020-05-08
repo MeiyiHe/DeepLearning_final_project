@@ -585,8 +585,8 @@ class HighResolutionNet(nn.Module):
             model_dict.update(pretrained_dict)
             self.load_state_dict(model_dict)
 
-def get_seg_model(cfg, **kwargs):
-    model = HighResolutionNet(cfg, **kwargs)
+def HR_model(**kwargs):
+    model = HighResolutionNet(get_config(), **kwargs)
     # Initialize weights from normal distribution (because we cannot use pretrained weights)
     #model.init_weights()
     # loading AE pretrain file

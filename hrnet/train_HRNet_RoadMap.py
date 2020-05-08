@@ -23,7 +23,7 @@ import torchvision.models as models
 
 from data_helper import UnlabeledDataset, LabeledDataset
 from helper import collate_fn, draw_box, compute_ts_road_map
-from hrnet import get_seg_model, get_config
+from hrnet import HR_model
 
 
 if __name__ == '__main__':
@@ -65,7 +65,7 @@ if __name__ == '__main__':
 	trainloader = torch.utils.data.DataLoader(labeled_trainset, batch_size=2, shuffle=True, num_workers=2, collate_fn=collate_fn)
 	valloader = torch.utils.data.DataLoader(labeled_valset, batch_size=2, shuffle=True, num_workers=2, collate_fn=collate_fn)
 
-	model = get_seg_model(get_config()).to(device)
+	model = HR_model().to(device)
 
 	# for param in model.parameters():
 	# 	param.requires_grad = True
